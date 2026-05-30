@@ -1,0 +1,24 @@
+flowchart LR
+    IN["TAC Input\nfrom tac_gen.cpp"]
+
+    P1["Pass 1\nConstant Folding\n+\nConstant Propagation\nt1 = 3+4 → t1 = 7\nx=5; t1=x+2 → t1=7"]
+
+    P2["Pass 2\nCommon Sub-expression\nElimination\nt1 = a+b\nt2 = a+b → t2 = t1"]
+
+    P3["Pass 3\nDead Code\nElimination\nRemove temps never\nread after assignment"]
+
+    P4["Pass 4\nUnreachable Block\nElimination\nRemove code after\nunconditional goto/return"]
+
+    P5["Pass 5\nLoop-Invariant\nCode Motion\nHoist constants\nout of loop body"]
+
+    OUT["Optimised TAC\n→ output/*.opt.tac"]
+
+    IN --> P1 --> P2 --> P3 --> P4 --> P5 --> OUT
+
+    style IN  fill:#1e3a5f,stroke:#4a9eff,color:#fff
+    style P1  fill:#1a4731,stroke:#4caf7d,color:#fff
+    style P2  fill:#1a4731,stroke:#4caf7d,color:#fff
+    style P3  fill:#3d2b00,stroke:#f0a500,color:#fff
+    style P4  fill:#3d1a00,stroke:#ff6b35,color:#fff
+    style P5  fill:#3b003b,stroke:#c678dd,color:#fff
+    style OUT fill:#1e3a5f,stroke:#4a9eff,color:#fff

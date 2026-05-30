@@ -1,0 +1,37 @@
+flowchart TB
+    subgraph CODE["Source Code"]
+        direction TB
+        L1["int x = 1;"]
+        L2["if (x > 0) {"]
+        L3["    int y = 2;"]
+        L4["    while (y < 5) {"]
+        L5["        int z = x + y;"]
+        L6["    }   ← pop scope 3"]
+        L7["}   ← pop scope 2"]
+    end
+
+    subgraph STACK["Scope Stack (innermost on top)"]
+        direction TB
+        S3["Scope 3 — while body\nz : int"]
+        S2["Scope 2 — if body\ny : int"]
+        S1["Scope 1 — global\nx : int"]
+        S3 --> S2 --> S1
+    end
+
+    subgraph LOOKUP["Variable Lookup: z = x + y"]
+        direction LR
+        LU1["Search Scope 3\nz ✅  x ❌  y ❌"]
+        LU2["Search Scope 2\ny ✅  x ❌"]
+        LU3["Search Scope 1\nx ✅"]
+        LU1 --> LU2 --> LU3
+    end
+
+    CODE --> STACK
+    STACK --> LOOKUP
+
+    style S3 fill:#3b003b,stroke:#c678dd,color:#fff
+    style S2 fill:#1a4731,stroke:#4caf7d,color:#fff
+    style S1 fill:#1e3a5f,stroke:#4a9eff,color:#fff
+    style LU1 fill:#3b003b,stroke:#c678dd,color:#fff
+    style LU2 fill:#1a4731,stroke:#4caf7d,color:#fff
+    style LU3 fill:#1e3a5f,stroke:#4a9eff,color:#fff

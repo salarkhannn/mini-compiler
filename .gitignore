@@ -1,0 +1,12 @@
+obj/
+minicc
+output/
+parser/postfix
+parser/prefix
+parser/calc_infix
+parser/infix.tab.c
+parser/infix.tab.h
+first_follow/ff
+src/lex.yy.c
+src/parser.tab.c
+src/parser.tab.h

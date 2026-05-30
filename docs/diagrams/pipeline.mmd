@@ -1,0 +1,21 @@
+flowchart TD
+    SRC["📄 Source File\n(.mc)"]
+    LEX["Phase 1 — Lexical Analysis\nFlex lexer.l\nOutputs: token stream"]
+    PAR["Phase 2/3 — Syntax Analysis\nBison parser.y\nOutputs: AST"]
+    SEM["Phase 5 — Semantic Analysis\nsemantic.cpp\nType checking · Scope checking"]
+    TAC["Phase 6 — IR Generation\ntac_gen.cpp\nOutputs: Three-Address Code"]
+    OPT["Phase 7 — Optimisation\noptimizer.cpp\nConst Fold · CSE · DCE · LICM · Unreachable"]
+    LLVM["Phase 8 — LLVM IR\nclang -emit-llvm\nOutputs: .ll bitcode"]
+    OUT["📦 Output\n.tokens · .ast · .tac · .opt.tac"]
+
+    SRC --> LEX --> PAR --> SEM --> TAC --> OPT --> OUT
+    OPT -.->|external| LLVM
+
+    style SRC  fill:#1e3a5f,stroke:#4a9eff,color:#fff
+    style LEX  fill:#1a4731,stroke:#4caf7d,color:#fff
+    style PAR  fill:#1a4731,stroke:#4caf7d,color:#fff
+    style SEM  fill:#3d2b00,stroke:#f0a500,color:#fff
+    style TAC  fill:#3d1a00,stroke:#ff6b35,color:#fff
+    style OPT  fill:#3b003b,stroke:#c678dd,color:#fff
+    style LLVM fill:#1a1a3e,stroke:#7c83fd,color:#fff
+    style OUT  fill:#1e3a5f,stroke:#4a9eff,color:#fff
