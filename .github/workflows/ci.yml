@@ -26,6 +26,10 @@ jobs:
         if: runner.os == 'macOS'
         run: brew update && brew install flex bison gcc llvm
 
+      - name: Set up Bison path (macOS)
+        if: runner.os == 'macOS'
+        run: echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+
       - name: Build compiler
         run: make clean && make -j4
 
