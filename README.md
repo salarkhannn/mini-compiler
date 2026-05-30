@@ -64,7 +64,7 @@ Types: `int`, `float`, `void` • Control: `if`/`else`, `while` • Operators: `
 
 ## Architecture
 
-<!-- PIPELINE_DIAGRAM -->
+![Compiler Pipeline](docs/diagrams/pipeline.png)
 
 The compiler pipeline consists of 8 modular phases:
 
