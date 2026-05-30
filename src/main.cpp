@@ -9,6 +9,8 @@
 #include "optimizer.h"
 #include "error_handler.h"
 
+#define MC_VERSION "0.1.0"
+
 extern int  yyparse();
 extern FILE* yyin;
 extern ProgramNode* rootAST;
@@ -29,30 +31,51 @@ struct Options {
     bool dumpTAC      = true;
     bool dumpOpt      = true;
     bool benchmarkOpt = false;
+    bool showStats    = false;
+    bool showVersion  = false;
+    bool showHelp     = false;
 };
 
 static void usage(const char* prog) {
-    std::cerr
+    std::cout
         << "Usage: " << prog << " <source-file> [options]\n"
-        << "  --no-tokens    suppress token dump\n"
-        << "  --no-ast       suppress AST dump\n"
-        << "  --no-tac       suppress TAC dump\n"
-        << "  --no-opt       suppress optimised TAC dump\n"
-        << "  --bench        print wall-clock time for optimiser\n";
+        << "\nOptions:\n"
+        << "  --no-tokens    Suppress token dump\n"
+        << "  --no-ast       Suppress AST dump\n"
+        << "  --no-tac       Suppress unoptimised TAC dump\n"
+        << "  --no-opt       Suppress optimised TAC dump\n"
+        << "  --bench        Print optimizer wall-clock time\n"
+        << "  --stats        Print instruction count before/after optimization\n"
+        << "  --version      Print version and exit\n"
+        << "  --help         Print this message and exit\n";
 }
 
 static Options parseArgs(int argc, char** argv) {
     Options opts;
-    if (argc < 2) { usage(argv[0]); std::exit(1); }
-    opts.inputFile = argv[1];
-    for (int i = 2; i < argc; ++i) {
-        if      (std::strcmp(argv[i], "--no-tokens") == 0) opts.dumpTokens   = false;
+    for (int i = 1; i < argc; ++i) {
+        if      (std::strcmp(argv[i], "--help")      == 0) opts.showHelp     = true;
+        else if (std::strcmp(argv[i], "--version")   == 0) opts.showVersion  = true;
+        else if (std::strcmp(argv[i], "--no-tokens") == 0) opts.dumpTokens   = false;
         else if (std::strcmp(argv[i], "--no-ast")    == 0) opts.dumpAST      = false;
         else if (std::strcmp(argv[i], "--no-tac")    == 0) opts.dumpTAC      = false;
         else if (std::strcmp(argv[i], "--no-opt")    == 0) opts.dumpOpt      = false;
         else if (std::strcmp(argv[i], "--bench")     == 0) opts.benchmarkOpt = true;
-        else { std::cerr << "Unknown option: " << argv[i] << "\n"; usage(argv[0]); std::exit(1); }
+        else if (std::strcmp(argv[i], "--stats")     == 0) opts.showStats    = true;
+        else if (argv[i][0] == '-') {
+            std::cerr << "error: unknown option '" << argv[i] << "'\n";
+            usage(argv[0]);
+            std::exit(1);
+        } else {
+            if (!opts.inputFile.empty()) {
+                std::cerr << "error: unexpected argument '" << argv[i] << "'\n";
+                std::exit(1);
+            }
+            opts.inputFile = argv[i];
+        }
     }
+    if (opts.showHelp)    { usage(argv[0]); std::exit(0); }
+    if (opts.showVersion) { std::cout << "mc version " << MC_VERSION << "\n"; std::exit(0); }
+    if (opts.inputFile.empty()) { usage(argv[0]); std::exit(1); }
     return opts;
 }
 
@@ -111,11 +134,27 @@ int main(int argc, char** argv) {
 
     // ---- Optimisation ----
     TACProgram optimised = tacGen.instructions;
+    size_t beforeCount = 0;
+    size_t afterCount  = 0;
+    if (opts.showStats) {
+        for (const auto& inst : tacGen.instructions)
+            if (inst.op != TACOp::LABEL) ++beforeCount;
+    }
 
     auto t0 = std::chrono::steady_clock::now();
     Optimizer optimizer;
     optimizer.run(optimised);
     auto t1 = std::chrono::steady_clock::now();
+
+    if (opts.showStats) {
+        for (const auto& inst : optimised)
+            if (inst.op != TACOp::LABEL) ++afterCount;
+        double reduction = (beforeCount > 0)
+            ? (1.0 - static_cast<double>(afterCount) / beforeCount) * 100.0
+            : 0.0;
+        std::cout << "[stats] instructions: " << beforeCount << " -> " << afterCount
+                  << " (" << reduction << "% reduction)\n";
+    }
 
     if (opts.benchmarkOpt) {
         double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
