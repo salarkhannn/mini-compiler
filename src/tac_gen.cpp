@@ -11,12 +11,12 @@ void TACGenerator::generate(ProgramNode* node) {
 }
 
 void TACGenerator::emit(FuncDeclNode* node) {
-    instructions.push_back({TACOp::LABEL, node->name});
+    instructions.push_back({TACOp::LABEL, node->name, "", "", ""});
     for (const auto& p : node->params)
-        instructions.push_back({TACOp::PARAM, p.name, p.name});
+        instructions.push_back({TACOp::PARAM, p.name, p.name, "", ""});
     emit(node->body.get());
     if (node->returnType == Type::VOID)
-        instructions.push_back({TACOp::RETURN});
+        instructions.push_back({TACOp::RETURN, "", "", "", ""});
 }
 
 std::string TACGenerator::emit(ExprNode* node) {
@@ -67,11 +67,11 @@ std::string TACGenerator::emit(BinaryOpNode* node) {
 std::string TACGenerator::emit(CallExprNode* node) {
     for (const auto& arg : node->args) {
         std::string v = emit(arg.get());
-        instructions.push_back({TACOp::PARAM, "", v});
+        instructions.push_back({TACOp::PARAM, "", v, "", ""});
     }
     std::string dst = freshTemp();
     instructions.push_back({TACOp::CALL, dst, node->funcName,
-                             std::to_string(node->args.size())});
+                             std::to_string(node->args.size()), ""});
     return dst;
 }
 
@@ -81,7 +81,7 @@ void TACGenerator::emit(VarDeclNode*) {
 
 void TACGenerator::emit(AssignNode* node) {
     std::string val = emit(node->expr.get());
-    instructions.push_back({TACOp::ASSIGN, node->name, val});
+    instructions.push_back({TACOp::ASSIGN, node->name, val, "", ""});
 }
 
 void TACGenerator::emit(BlockNode* node) {
@@ -95,20 +95,20 @@ void TACGenerator::emit(IfNode* node) {
 
     if (node->elseBlock) {
         std::string elseLbl = freshLabel();
-        instructions.push_back({TACOp::IF_GOTO,    thenLbl, cond});
-        instructions.push_back({TACOp::GOTO,        elseLbl});
-        instructions.push_back({TACOp::LABEL,       thenLbl});
+        instructions.push_back({TACOp::IF_GOTO, thenLbl, cond, "", ""});
+        instructions.push_back({TACOp::GOTO,    elseLbl, "", "", ""});
+        instructions.push_back({TACOp::LABEL,   thenLbl, "", "", ""});
         emit(node->thenBlock.get());
-        instructions.push_back({TACOp::GOTO,        endLbl});
-        instructions.push_back({TACOp::LABEL,       elseLbl});
+        instructions.push_back({TACOp::GOTO,    endLbl, "", "", ""});
+        instructions.push_back({TACOp::LABEL,   elseLbl, "", "", ""});
         emit(node->elseBlock.get());
-        instructions.push_back({TACOp::LABEL,       endLbl});
+        instructions.push_back({TACOp::LABEL,   endLbl, "", "", ""});
     } else {
-        instructions.push_back({TACOp::IF_GOTO,    thenLbl, cond});
-        instructions.push_back({TACOp::GOTO,        endLbl});
-        instructions.push_back({TACOp::LABEL,       thenLbl});
+        instructions.push_back({TACOp::IF_GOTO, thenLbl, cond, "", ""});
+        instructions.push_back({TACOp::GOTO,    endLbl, "", "", ""});
+        instructions.push_back({TACOp::LABEL,   thenLbl, "", "", ""});
         emit(node->thenBlock.get());
-        instructions.push_back({TACOp::LABEL,       endLbl});
+        instructions.push_back({TACOp::LABEL,   endLbl, "", "", ""});
     }
 }
 
@@ -117,26 +117,26 @@ void TACGenerator::emit(WhileNode* node) {
     std::string bodyLbl = freshLabel();
     std::string endLbl  = freshLabel();
 
-    instructions.push_back({TACOp::LABEL, testLbl});
+    instructions.push_back({TACOp::LABEL,   testLbl, "", "", ""});
     std::string cond = emit(node->condition.get());
-    instructions.push_back({TACOp::IF_GOTO, bodyLbl, cond});
-    instructions.push_back({TACOp::GOTO,    endLbl});
-    instructions.push_back({TACOp::LABEL,   bodyLbl});
+    instructions.push_back({TACOp::IF_GOTO, bodyLbl, cond, "", ""});
+    instructions.push_back({TACOp::GOTO,    endLbl, "", "", ""});
+    instructions.push_back({TACOp::LABEL,   bodyLbl, "", "", ""});
     emit(node->body.get());
-    instructions.push_back({TACOp::GOTO,    testLbl});
-    instructions.push_back({TACOp::LABEL,   endLbl});
+    instructions.push_back({TACOp::GOTO,    testLbl, "", "", ""});
+    instructions.push_back({TACOp::LABEL,   endLbl, "", "", ""});
 }
 
 void TACGenerator::emit(ReturnNode* node) {
     if (node->expr) {
         std::string val = emit(node->expr.get());
-        instructions.push_back({TACOp::RETURN, "", val});
+        instructions.push_back({TACOp::RETURN, "", val, "", ""});
     } else {
-        instructions.push_back({TACOp::RETURN});
+        instructions.push_back({TACOp::RETURN, "", "", "", ""});
     }
 }
 
 void TACGenerator::emit(PrintNode* node) {
     std::string val = emit(node->expr.get());
-    instructions.push_back({TACOp::PRINT, "", val});
+    instructions.push_back({TACOp::PRINT, "", val, "", ""});
 }
