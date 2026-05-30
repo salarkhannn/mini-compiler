@@ -1,6 +1,6 @@
 # mc — A C-like language compiler with 5-pass static optimization
 
-[![Build](https://img.shields.io/badge/build-passing-brightgreen)]()
+[![CI](https://github.com/salarkhannn/mini-compiler/actions/workflows/ci.yml/badge.svg)](https://github.com/salarkhannn/mini-compiler/actions/workflows/ci.yml)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)]()
 [![Flex](https://img.shields.io/badge/Flex-2.6-blue)]()
 [![Bison](https://img.shields.io/badge/Bison-3.0-blue)]()
@@ -116,7 +116,7 @@ Measured on `tests/test_main.mc` (55 lines, 4 functions, recursion, loop, branch
 | Optimizer runtime (avg, 5 runs) | — | 0.34 ms | — |
 
 ```
-$ for i in 1 2 3 4 5; do ./minicc tests/test_main.mc --bench --no-ast --no-tokens 2>&1 | grep bench; done
+for i in 1 2 3 4 5; do ./minicc tests/test_main.mc --bench --no-ast --no-tokens 2>&1 | grep bench; done
 [bench] optimiser: 0.334 ms
 [bench] optimiser: 0.346 ms
 [bench] optimiser: 0.351 ms
@@ -135,6 +135,9 @@ Options:
   --no-tac       Suppress unoptimized TAC dump
   --no-opt       Suppress optimized TAC dump
   --bench        Print optimizer wall-clock time
+  --stats        Print instruction count before/after optimization
+  --version      Print version and exit
+  --help         Print this message and exit
 
 Output files (written to output/<stem>.*):
   output/<stem>.tokens    Token stream
@@ -165,12 +168,45 @@ diff llvm/test1.ll llvm/test1_opt.ll  # compare -O3 effects
 
 ## Build
 
+## Test Suite
+
 ```
-make              Build compiler binary (minicc)
+$ make check
+==== mc test suite ====
+
+--- Compilation tests ---
+  PASS  tests/fib.mc
+  PASS  tests/optimizer_fold.mc
+  PASS  tests/optimizer_licm.mc
+
+--- Error detection tests ---
+  PASS  type_error.mc
+  PASS  scope_error.mc
+  PASS  void_error.mc
+
+--- Examples ---
+  PASS  examples/fib.mc
+  PASS  examples/collatz.mc
+  PASS  examples/pi.mc
+
+--- CLI flags ---
+  PASS  --version
+  PASS  --help
+  PASS  --stats
+
+==== Results: 12 passed, 0 failed ====
+```
+
+## Build
+
+```
+make              Build compiler binary (minicc) with debug symbols
+make release      Build with -O2 for production use
 make demos        Build postfix/prefix/infix calculators
 make ff           Build First/Follow/LL(1) tool
 make llvm-ir      Generate LLVM IR via Clang
 make test         Compile and run on tests/test_main.mc
+make check        Run full test suite (12 tests)
 make clean        Remove all build artifacts
 ```
 

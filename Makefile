@@ -29,7 +29,7 @@ PREFIX_BIN     = parser/prefix
 INFIX_BIN      = parser/calc_infix
 FF_BIN         = first_follow/ff
 
-.PHONY: all clean demos ff llvm-ir test check
+.PHONY: all clean release demos ff llvm-ir test check
 
 all: $(OBJ_DIR) $(TARGET)
 
@@ -98,6 +98,9 @@ test: all
 
 check: all
 	@bash tests/run.sh
+
+release: CXXFLAGS = -std=c++17 -O2 -DNDEBUG -I include
+release: all
 
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET) \
