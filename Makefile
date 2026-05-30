@@ -29,7 +29,7 @@ PREFIX_BIN     = parser/prefix
 INFIX_BIN      = parser/calc_infix
 FF_BIN         = first_follow/ff
 
-.PHONY: all clean demos ff llvm-ir
+.PHONY: all clean demos ff llvm-ir test check
 
 all: $(OBJ_DIR) $(TARGET)
 
@@ -95,6 +95,9 @@ test: all
 	@cat output/test_main.tac
 	@echo "--- Optimised TAC ---"
 	@cat output/test_main.opt.tac
+
+check: all
+	@bash tests/run.sh
 
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET) \
