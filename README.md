@@ -166,8 +166,6 @@ make llvm-ir
 diff llvm/test1.ll llvm/test1_opt.ll  # compare -O3 effects
 ```
 
-## Build
-
 ## Test Suite
 
 ```
